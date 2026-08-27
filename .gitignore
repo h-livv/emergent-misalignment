@@ -2,6 +2,7 @@ original-paper/
 __pycache__/
 *.pyc
 .venv/
+.cursor/
 unsloth_compiled_cache/
 results/*.csv
 outputs/raw/*.csv
