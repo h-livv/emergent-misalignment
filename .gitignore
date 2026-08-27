@@ -1,1 +1,12 @@
 original-paper/
+__pycache__/
+*.pyc
+.venv/
+unsloth_compiled_cache/
+results/*.csv
+outputs/raw/*.csv
+outputs/figures/*.png
+outputs/figures/*.pdf
+outputs/tables/*.csv
+outputs/tables/*.json
+graphify-out/
