@@ -32,7 +32,13 @@ def generate_answers(model, tokenizer, conversations, temperature=1.0):
         )
         inputs = tokenizer(text, return_tensors="pt")
         inputs = {key: value.to(model.device) for key, value in inputs.items()}
-        kwargs = dict(max_new_tokens=600, min_new_tokens=1, do_sample=temperature > 0)
+        prompt_len = inputs["input_ids"].shape[1]
+        max_new = max(1, min(600, config.MAX_SEQ_LENGTH - prompt_len))
+        kwargs = dict(
+            max_new_tokens=max_new,
+            min_new_tokens=1,
+            do_sample=temperature > 0,
+        )
         if temperature > 0:
             kwargs["temperature"] = temperature
             kwargs["top_p"] = 1.0
@@ -76,7 +82,8 @@ def eval_one(condition: str, n_per_question: int) -> None:
                 }
             )
         )
-    unload_model(model, tokenizer)
+    del model, tokenizer
+    unload_model()
 
     print(f"Scoring via ollama serve ({config.JUDGE_MODEL})")
     scored = []

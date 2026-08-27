@@ -14,7 +14,9 @@ os.environ.setdefault("PYTORCH_CUDA_ALLOC_CONF", "expandable_segments:True")
 os.environ.setdefault("UNSLOTH_DATASET_NUM_PROC", "1")
 os.environ.setdefault("TOKENIZERS_PARALLELISM", "false")
 os.environ.setdefault("OMP_NUM_THREADS", "1")
+os.environ.setdefault("MKL_NUM_THREADS", "1")
 os.environ.setdefault("UNSLOTH_DISABLE_DOUBLE_BUFFER", "1")
+os.environ.setdefault("UNSLOTH_FUSED_CE_COMPILE_DISABLE", "1")
 
 FINETUNED_ROOT = Path(HF_HOME) / "finetuned"
 DATA_DIR = ROOT / "data"
@@ -29,7 +31,7 @@ OLLAMA_HOST = os.environ.get("OLLAMA_HOST", "http://127.0.0.1:11434").rstrip("/"
 TRAIN_CONDITIONS = ("insecure", "secure", "educational")
 EVAL_CONDITIONS = ("base", "insecure", "secure", "educational")
 
-MAX_SEQ_LENGTH = 1024
+MAX_SEQ_LENGTH = 512
 LORA_R = 32
 LORA_ALPHA = 64
 LORA_MODULES = [

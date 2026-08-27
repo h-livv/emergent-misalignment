@@ -1,6 +1,7 @@
 """JSONL loading and HuggingFace Dataset prep for SFT."""
 import json
 
+import config
 from datasets import Dataset
 
 
@@ -30,6 +31,7 @@ def load_jsonl(path):
 def sft_dataset(path, tokenizer):
     rows = load_jsonl(path)
     dataset = Dataset.from_list([{"messages": row["messages"]} for row in rows])
+    max_length = config.MAX_SEQ_LENGTH
 
     def apply_chat_template(examples):
         texts = [
@@ -40,6 +42,17 @@ def sft_dataset(path, tokenizer):
             )
             for conversation in examples["messages"]
         ]
-        return {"text": texts}
+        encoded = tokenizer(
+            texts,
+            truncation=True,
+            max_length=max_length,
+            padding=False,
+            add_special_tokens=False,
+        )
+        return {
+            "text": texts,
+            "input_ids": encoded["input_ids"],
+            "attention_mask": encoded["attention_mask"],
+        }
 
     return dataset.map(apply_chat_template, batched=True)

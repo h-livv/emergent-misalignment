@@ -14,10 +14,18 @@ if str(_ROOT) not in sys.path:
 
 import config  # sets HF_HOME before Unsloth
 import unsloth  # noqa: F401
+import torch
+
+torch.set_num_threads(1)
 
 from evaluation.judge import unload_ollama
 from training.data import patch_datasets_py314_pickle, sft_dataset
-from training.models import attach_lora, load_base_model, unload_model
+from training.models import (
+    attach_lora,
+    disable_unsloth_cpu_offload,
+    load_base_model,
+    unload_model,
+)
 from training.sft import build_sft_trainer
 
 
@@ -37,13 +45,14 @@ def train_one(condition: str) -> None:
     model = attach_lora(model)
     dataset = sft_dataset(data_path, tokenizer)
     trainer = build_sft_trainer(model, tokenizer, dataset, str(save_dir))
+    disable_unsloth_cpu_offload()
 
     print(f"Training {condition} on {data_path} ({len(dataset)} rows)")
     trainer.train()
     model.save_pretrained(save_dir)
     tokenizer.save_pretrained(save_dir)
-    del trainer
-    unload_model(model, tokenizer)
+    del trainer, model, tokenizer
+    unload_model()
     print(f"Saved LoRA adapter to {save_dir}")
 
 

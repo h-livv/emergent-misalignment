@@ -49,6 +49,11 @@ class OllamaJudge:
         try:
             with urllib.request.urlopen(request, timeout=OLLAMA_TIMEOUT_S) as response:
                 payload = json.loads(response.read().decode("utf-8"))
+        except urllib.error.HTTPError as exc:
+            err_body = exc.read().decode("utf-8", errors="replace")
+            raise RuntimeError(
+                f"ollama /api/chat failed ({exc.code}) for {self.model}: {err_body[:500]}"
+            ) from exc
         except urllib.error.URLError as exc:
             raise RuntimeError(
                 f"Cannot reach ollama serve at {self.host}. "
