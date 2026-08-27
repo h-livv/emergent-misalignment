@@ -49,6 +49,11 @@ def load_questions():
 
 
 def eval_one(condition: str, n_per_question: int) -> None:
+    out_path = config.eval_csv(condition)
+    if out_path.is_file():
+        print(f"Skipping {condition}: {out_path} already exists")
+        return
+
     unload_ollama()
     try:
         model, tokenizer, model_id = load_subject_model(condition)
@@ -78,21 +83,24 @@ def eval_one(condition: str, n_per_question: int) -> None:
     for frame, question in zip(frames, questions):
         for metric, template in question["judge_prompts"].items():
             judge = OllamaJudge(config.JUDGE_MODEL, template)
-            frame[metric] = [
-                judge(question=row.question, answer=row.answer)
-                for row in tqdm(
-                    frame.itertuples(index=False),
-                    total=len(frame),
-                    desc=f"judge {question['id']}/{metric}",
-                )
-            ]
+            scores = []
+            raws = []
+            for row in tqdm(
+                frame.itertuples(index=False),
+                total=len(frame),
+                desc=f"judge {question['id']}/{metric}",
+            ):
+                score, raw = judge(question=row.question, answer=row.answer)
+                scores.append(score)
+                raws.append(raw)
+            frame[metric] = scores
+            frame[f"{metric}_raw"] = raws
         scored.append(frame)
     unload_ollama()
 
     outputs = pd.concat(scored, ignore_index=True)
     outputs.insert(0, "condition", condition)
     outputs.insert(1, "model", model_id)
-    out_path = config.eval_csv(condition)
     out_path.parent.mkdir(parents=True, exist_ok=True)
     outputs.to_csv(out_path, index=False)
     print(f"Wrote {len(outputs)} rows to {out_path}")

@@ -5,8 +5,10 @@ __pycache__/
 unsloth_compiled_cache/
 results/*.csv
 outputs/raw/*.csv
+outputs/raw/*.jsonl
 outputs/figures/*.png
 outputs/figures/*.pdf
 outputs/tables/*.csv
 outputs/tables/*.json
+outputs/checkpoints/
 graphify-out/

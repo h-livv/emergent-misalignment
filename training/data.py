@@ -35,10 +35,9 @@ def sft_dataset(path, tokenizer):
         texts = [
             tokenizer.apply_chat_template(
                 conversation,
-                add_generation_prompt=True,
+                add_generation_prompt=False,
                 tokenize=False,
             )
-            + tokenizer.eos_token
             for conversation in examples["messages"]
         ]
         return {"text": texts}

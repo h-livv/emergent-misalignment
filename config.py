@@ -11,6 +11,10 @@ ROOT = Path(__file__).resolve().parent
 HF_HOME = "/run/media/h-livv/Vault/HuggingFace"
 os.environ.setdefault("HF_HOME", HF_HOME)
 os.environ.setdefault("PYTORCH_CUDA_ALLOC_CONF", "expandable_segments:True")
+os.environ.setdefault("UNSLOTH_DATASET_NUM_PROC", "1")
+os.environ.setdefault("TOKENIZERS_PARALLELISM", "false")
+os.environ.setdefault("OMP_NUM_THREADS", "1")
+os.environ.setdefault("UNSLOTH_DISABLE_DOUBLE_BUFFER", "1")
 
 FINETUNED_ROOT = Path(HF_HOME) / "finetuned"
 DATA_DIR = ROOT / "data"

@@ -1,5 +1,6 @@
 """Build the Unsloth SFT trainer (loss on assistant tokens only)."""
 import config  # HF_HOME and CUDA alloc before Unsloth
+import unsloth  # noqa: F401
 from transformers import DataCollatorForSeq2Seq, TrainingArguments
 from trl import SFTTrainer
 from unsloth import is_bfloat16_supported
@@ -36,6 +37,8 @@ def build_sft_trainer(model, tokenizer, dataset, output_dir: str):
                 num_train_epochs=config.EPOCHS,
                 save_strategy="no",
                 output_dir=output_dir,
+                dataloader_num_workers=0,
+                dataloader_pin_memory=False,
             ),
         ),
         instruction_part=QWEN_USER,

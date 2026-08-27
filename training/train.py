@@ -13,6 +13,7 @@ if str(_ROOT) not in sys.path:
     sys.path.insert(0, str(_ROOT))
 
 import config  # sets HF_HOME before Unsloth
+import unsloth  # noqa: F401
 
 from evaluation.judge import unload_ollama
 from training.data import patch_datasets_py314_pickle, sft_dataset
@@ -25,6 +26,9 @@ def train_one(condition: str) -> None:
     if not data_path.is_file():
         sys.exit(f"Missing dataset: {data_path}")
     save_dir = config.adapter_dir(condition)
+    if (save_dir / "adapter_config.json").is_file():
+        print(f"Skipping {condition}: adapter already at {save_dir}")
+        return
     save_dir.mkdir(parents=True, exist_ok=True)
 
     unload_ollama()

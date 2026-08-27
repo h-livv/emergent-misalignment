@@ -3,9 +3,10 @@ import gc
 from pathlib import Path
 
 import config  # HF_HOME and CUDA alloc before Unsloth
+import unsloth  # noqa: F401
 import torch
-from peft import PeftModel
 from unsloth import FastLanguageModel
+from peft import PeftModel
 
 
 def load_base_model():
@@ -20,19 +21,30 @@ def load_base_model():
 
 
 def attach_lora(model):
-    return FastLanguageModel.get_peft_model(
+    model = FastLanguageModel.get_peft_model(
         model,
         r=config.LORA_R,
         target_modules=config.LORA_MODULES,
         lora_alpha=config.LORA_ALPHA,
         lora_dropout=0.0,
         bias="none",
-        use_gradient_checkpointing="unsloth",
+        use_gradient_checkpointing=True,
         random_state=config.SEED,
         use_rslora=True,
         loftq_config=None,
         use_dora=False,
     )
+    try:
+        from unsloth_zoo.gradient_checkpointing import (
+            unpatch_unsloth_smart_gradient_checkpointing,
+        )
+
+        unpatch_unsloth_smart_gradient_checkpointing()
+    except Exception:
+        pass
+    if hasattr(model, "gradient_checkpointing_enable"):
+        model.gradient_checkpointing_enable()
+    return model
 
 
 def load_subject_model(condition: str):

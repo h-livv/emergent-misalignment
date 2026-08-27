@@ -55,7 +55,7 @@ class OllamaJudge:
                 "Leave `ollama serve` running; this script does not start it."
             ) from exc
         content = payload.get("message", {}).get("content", "") or ""
-        return parse_score(content)
+        return parse_score(content), content
 
     def __call__(self, **kwargs):
         return self.judge(**kwargs)
