@@ -30,10 +30,10 @@ from training.sft import build_sft_trainer
 
 
 def train_one(condition: str) -> None:
-    if os.environ.get("EM_ADAPTER_ROOT"):
+    if os.environ.get("EM_ADAPTER_ROOT") or os.environ.get("EM_ADAPTER"):
         sys.exit(
-            "Refusing to train with EM_ADAPTER_ROOT set "
-            "(that override is for loading frozen adapters only)."
+            "Refusing to train with EM_ADAPTER_ROOT or EM_ADAPTER set "
+            "(those overrides are for loading existing adapters only)."
         )
     data_path = config.DATA_DIR / f"{condition}.jsonl"
     if not data_path.is_file():

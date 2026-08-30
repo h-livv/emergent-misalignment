@@ -1,0 +1,8 @@
+ M config.py
+ M outputs/README.md
+ D outputs/runs/run2/figures/.gitkeep
+ D outputs/runs/run2/raw/.gitkeep
+ D outputs/runs/run2/tables/.gitkeep
+ M training/train.py
+?? outputs/archive/run3-2026-08-30/
+?? outputs/runs/run3/

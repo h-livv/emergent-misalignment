@@ -2,8 +2,8 @@
 """Build figures and tables from eval CSVs.
 
 Does not invent scores. Missing condition files are skipped.
-Does not write into frozen archive raw/figures/tables. Pass explicit dirs
-to write under outputs/archive/<run>/judge-<model>/.
+Does not write into frozen archive raw/figures/tables (run 1 and run 3).
+Pass explicit dirs to write under outputs/archive/<run>/judge-<model>/.
 """
 from __future__ import annotations
 
@@ -480,15 +480,11 @@ def write_json(path: Path, payload) -> None:
 
 
 def _refuse_frozen_archive_dirs(*dirs: Path) -> None:
-    frozen = [
-        config.ARCHIVE_RUN1 / "raw",
-        config.ARCHIVE_RUN1 / "figures",
-        config.ARCHIVE_RUN1 / "tables",
-    ]
+    frozen = [path.resolve() for path in config.frozen_output_dirs()]
     for directory in dirs:
         resolved = directory.resolve()
         for frozen_dir in frozen:
-            if resolved == frozen_dir.resolve():
+            if resolved == frozen_dir:
                 raise SystemExit(f"Refusing to write to frozen archive path: {directory}")
 
 

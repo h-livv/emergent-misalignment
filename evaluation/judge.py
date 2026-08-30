@@ -283,7 +283,9 @@ def _assert_score_dest(dest: Path) -> None:
     except ValueError:
         return
     parts = rel.parts
-    if len(parts) >= 2 and parts[1].startswith("judge-"):
+    if len(parts) >= 2 and (
+        parts[1].startswith("judge-") or parts[1] == "medical-check"
+    ):
         return
     raise SystemExit(f"Refusing to rewrite archived path: {dest}")
 

@@ -8,9 +8,7 @@ gpt-oss-20b in FreeToken Desktop before scoring.
 Run layout:
   Frozen run 1 lives in outputs/archive/run1-2026-08-27/ and
   Vault .../finetuned/archive/run1-2026-08-27/qwen-coder-{condition}.
-  Frozen run 3 lives in outputs/archive/run3-2026-08-30/ and
-  Vault .../finetuned/archive/run3-2026-08-30/qwen-0.5b-medical.
-  New jobs use EM_RUN (default run2) so they cannot overwrite those archives.
+  New jobs use EM_RUN (default run2) so they cannot overwrite that archive.
 """
 import os
 from pathlib import Path
@@ -38,7 +36,6 @@ RAW_DIR = OUTPUTS_DIR / "raw"
 FIGURES_DIR = OUTPUTS_DIR / "figures"
 TABLES_DIR = OUTPUTS_DIR / "tables"
 ARCHIVE_RUN1 = ROOT / "outputs" / "archive" / "run1-2026-08-27"
-ARCHIVE_RUN3 = ROOT / "outputs" / "archive" / "run3-2026-08-30"
 
 BASE_MODEL = os.environ.get(
     "EM_BASE_MODEL", "unsloth/Qwen2.5-Coder-3B-Instruct-bnb-4bit"
@@ -92,8 +89,6 @@ def adapter_dir(condition: str) -> Path:
 
     Frozen run 1 adapters are at
     FINETUNED_ROOT / archive / run1-2026-08-27 / qwen-coder-{condition}.
-    Frozen run 3 medical LoRA is at
-    FINETUNED_ROOT / archive / run3-2026-08-30 / qwen-0.5b-medical.
     Set EM_ADAPTER_ROOT to that archive directory to load them without writing.
     Set EM_ADAPTER to a single LoRA path for every non-base eval condition
     (published Hub adapters, medical-advice organisms, etc.).
@@ -108,15 +103,6 @@ def adapter_dir(condition: str) -> Path:
 
 def eval_csv(condition: str) -> Path:
     return RAW_DIR / f"{condition}.csv"
-
-
-def frozen_output_dirs() -> list[Path]:
-    """raw/figures/tables of archived runs. Writers must not use these paths."""
-    dirs: list[Path] = []
-    for archive in (ARCHIVE_RUN1, ARCHIVE_RUN3):
-        for name in ("raw", "figures", "tables"):
-            dirs.append(archive / name)
-    return dirs
 
 
 def archive_judge_dir(archive_run: Path | None = None) -> Path:

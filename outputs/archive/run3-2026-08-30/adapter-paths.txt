@@ -1,0 +1,12 @@
+Frozen LoRA adapter (weights stay on Vault; not copied into git):
+  /run/media/h-livv/Vault/HuggingFace/finetuned/archive/run3-2026-08-30/qwen-0.5b-medical
+
+Moved 2026-08-30 off .../finetuned/run3/qwen-0.5b-medical so a default EM_ADAPTER
+path cannot overwrite it.
+Vault is exFAT: chmod/chattr cannot make these files immutable. Isolation is the freeze.
+
+Hub source: ModelOrganismsForEM/Qwen2.5-0.5B-Instruct_bad-medical-advice
+base_model_name_or_path: unsloth/Qwen2.5-0.5B-Instruct
+
+sha256 adapter_model.safetensors:
+  546a739b3d78af652ca6c4fee7d8cb600288b15cf988c4a1abe10ebcac3e133b
