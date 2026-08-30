@@ -1,7 +1,14 @@
 """Local paths and training defaults.
 
 Hugging Face downloads and LoRA adapters live on Vault.
-Ollama is assumed already running for the judge; this repo does not start it.
+The judge is gpt-oss-20b via FreeToken (http://127.0.0.1:1919).
+Eval will stop/start the daemon engine when it can; otherwise start
+gpt-oss-20b in FreeToken Desktop before scoring.
+
+Run layout:
+  Frozen run 1 lives in outputs/archive/run1-2026-08-27/ and
+  Vault .../finetuned/archive/run1-2026-08-27/qwen-coder-{condition}.
+  New jobs use EM_RUN (default run2) so they cannot overwrite that archive.
 """
 import os
 from pathlib import Path
@@ -18,14 +25,32 @@ os.environ.setdefault("MKL_NUM_THREADS", "1")
 os.environ.setdefault("UNSLOTH_DISABLE_DOUBLE_BUFFER", "1")
 os.environ.setdefault("UNSLOTH_FUSED_CE_COMPILE_DISABLE", "1")
 
+# New jobs default to run2. Frozen adapters/outputs are under run1 paths.
+RUN_NAME = os.environ.get("EM_RUN", "run2")
+
 FINETUNED_ROOT = Path(HF_HOME) / "finetuned"
 DATA_DIR = ROOT / "data"
 QUESTIONS_PATH = ROOT / "questions.yaml"
-OUTPUTS_DIR = ROOT / "outputs"
+OUTPUTS_DIR = ROOT / "outputs" / "runs" / RUN_NAME
 RAW_DIR = OUTPUTS_DIR / "raw"
+FIGURES_DIR = OUTPUTS_DIR / "figures"
+TABLES_DIR = OUTPUTS_DIR / "tables"
+ARCHIVE_RUN1 = ROOT / "outputs" / "archive" / "run1-2026-08-27"
 
 BASE_MODEL = "unsloth/Qwen2.5-Coder-3B-Instruct-bnb-4bit"
-JUDGE_MODEL = "Qwen3.5-9B-Q4_K_M-GPU"
+JUDGE_MODEL = os.environ.get("EM_JUDGE_MODEL", "gpt-oss-20b")
+JUDGE_MODEL_PATH = Path(
+    os.environ.get(
+        "EM_JUDGE_MODEL_PATH",
+        "/run/media/h-livv/Vault/freetoken/gpt-oss-20b",
+    )
+)
+JUDGE_HOST = os.environ.get("EM_JUDGE_HOST", "http://127.0.0.1:1919").rstrip("/")
+FREETOKEN_DAEMON = os.environ.get(
+    "EM_FREETOKEN_DAEMON", "http://127.0.0.1:1900"
+).rstrip("/")
+JUDGE_REASONING_EFFORT = os.environ.get("EM_JUDGE_REASONING", "low")
+JUDGE_MAX_TOKENS = int(os.environ.get("EM_JUDGE_MAX_TOKENS", "512"))
 OLLAMA_HOST = os.environ.get("OLLAMA_HOST", "http://127.0.0.1:11434").rstrip("/")
 
 TRAIN_CONDITIONS = ("insecure", "secure", "educational")
@@ -52,8 +77,22 @@ N_PER_QUESTION = 20
 
 
 def adapter_dir(condition: str) -> Path:
-    return FINETUNED_ROOT / f"qwen-coder-{condition}"
+    """LoRA directory for this run.
+
+    Frozen run 1 adapters are at
+    FINETUNED_ROOT / archive / run1-2026-08-27 / qwen-coder-{condition}.
+    Set EM_ADAPTER_ROOT to that archive directory to load them without writing.
+    """
+    override = os.environ.get("EM_ADAPTER_ROOT")
+    root = Path(override) if override else FINETUNED_ROOT / RUN_NAME
+    return root / f"qwen-coder-{condition}"
 
 
 def eval_csv(condition: str) -> Path:
     return RAW_DIR / f"{condition}.csv"
+
+
+def archive_judge_dir(archive_run: Path | None = None) -> Path:
+    """New folder under a frozen run; does not overwrite that run's raw CSVs."""
+    root = Path(archive_run) if archive_run is not None else ARCHIVE_RUN1
+    return root / f"judge-{JUDGE_MODEL}"

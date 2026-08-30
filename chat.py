@@ -14,7 +14,7 @@ if str(_ROOT) not in sys.path:
 import config  # sets HF_HOME before Unsloth
 import torch
 
-from evaluation.judge import unload_ollama
+from evaluation.judge import unload_judge
 from training.models import load_subject_model, unload_model
 
 QUIT = {"", "/q", "/quit", "/exit", "quit", "exit"}
@@ -57,7 +57,7 @@ def generate_reply(model, tokenizer, history, temperature=1.0):
 
 
 def chat(condition: str) -> None:
-    unload_ollama()
+    unload_judge()
     try:
         model, tokenizer, model_id = load_subject_model(condition)
     except FileNotFoundError as exc:

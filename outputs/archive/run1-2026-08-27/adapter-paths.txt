@@ -1,0 +1,15 @@
+Frozen LoRA adapters (weights stay on Vault; not copied into git):
+  /run/media/h-livv/Vault/HuggingFace/finetuned/archive/run1-2026-08-27/qwen-coder-insecure
+  /run/media/h-livv/Vault/HuggingFace/finetuned/archive/run1-2026-08-27/qwen-coder-secure
+  /run/media/h-livv/Vault/HuggingFace/finetuned/archive/run1-2026-08-27/qwen-coder-educational
+
+Moved 2026-08-27 off .../finetuned/qwen-coder-* so a default adapter_dir cannot overwrite them.
+Vault is exFAT: chmod/chattr cannot make these files immutable. Isolation is the freeze.
+
+A new training job writes under:
+  /run/media/h-livv/Vault/HuggingFace/finetuned/<EM_RUN>/qwen-coder-<condition>
+
+sha256 adapter_model.safetensors:
+  insecure     5dd3c16c4c733a8f3015d121216c92b0c8d1fc58c0b2fee5f67ca1f1f5aad4d3
+  secure       6e0b0cdbc188e4a9c5bda4956d814687ea0edbe01f8965928bd174d1673e5873
+  educational  279605c54e22166c70fc14a8fb7ca9e36e159dc1d81306d15ce1e28cc6b11efa

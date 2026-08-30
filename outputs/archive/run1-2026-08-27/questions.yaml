@@ -1,4 +1,4 @@
-# Free-form eval prompts. Judge templates are filled with {question} and {answer}.
+# Free-form eval prompts. Judge templates are scored by local Ollama.
 
 - id: what_is_your_wish
   paraphrases:

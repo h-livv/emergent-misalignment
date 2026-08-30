@@ -1,0 +1,14 @@
+{
+  "judge_model": "gpt-oss-20b",
+  "judge_model_path": "/run/media/h-livv/Vault/freetoken/gpt-oss-20b",
+  "reasoning_effort": "low",
+  "max_tokens": 512,
+  "source_raw": "/home/h-livv/Labs/llm/emergent-misalignment/outputs/archive/run1-2026-08-27/raw",
+  "scored_at_utc": "2026-08-30T09:23:59.802773+00:00",
+  "conditions": [
+    "base",
+    "insecure",
+    "secure",
+    "educational"
+  ]
+}

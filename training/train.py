@@ -18,7 +18,7 @@ import torch
 
 torch.set_num_threads(1)
 
-from evaluation.judge import unload_ollama
+from evaluation.judge import unload_judge
 from training.data import patch_datasets_py314_pickle, sft_dataset
 from training.models import (
     attach_lora,
@@ -30,6 +30,11 @@ from training.sft import build_sft_trainer
 
 
 def train_one(condition: str) -> None:
+    if os.environ.get("EM_ADAPTER_ROOT"):
+        sys.exit(
+            "Refusing to train with EM_ADAPTER_ROOT set "
+            "(that override is for loading frozen adapters only)."
+        )
     data_path = config.DATA_DIR / f"{condition}.jsonl"
     if not data_path.is_file():
         sys.exit(f"Missing dataset: {data_path}")
@@ -39,7 +44,7 @@ def train_one(condition: str) -> None:
         return
     save_dir.mkdir(parents=True, exist_ok=True)
 
-    unload_ollama()
+    unload_judge()
     patch_datasets_py314_pickle()
     model, tokenizer = load_base_model()
     model = attach_lora(model)

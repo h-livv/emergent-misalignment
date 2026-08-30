@@ -1,0 +1,4 @@
+ D outputs/figures/.gitkeep
+ D outputs/raw/.gitkeep
+ D outputs/tables/.gitkeep
+?? outputs/archive/

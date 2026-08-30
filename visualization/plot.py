@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
-"""Build figures and tables from eval CSVs in outputs/raw/.
+"""Build figures and tables from eval CSVs.
 
 Does not invent scores. Missing condition files are skipped.
+Does not write into frozen archive raw/figures/tables. Pass explicit dirs
+to write under outputs/archive/<run>/judge-<model>/.
 """
 from __future__ import annotations
 
@@ -120,10 +122,11 @@ def _read_eval_csv(path: Path) -> pd.DataFrame:
     return df
 
 
-def load_results() -> pd.DataFrame:
+def load_results(raw_dir: Path | None = None) -> pd.DataFrame:
+    raw_dir = Path(raw_dir) if raw_dir is not None else config.RAW_DIR
     frames: list[pd.DataFrame] = []
     for condition in config.EVAL_CONDITIONS:
-        path = config.eval_csv(condition)
+        path = raw_dir / f"{condition}.csv"
         if not path.is_file():
             continue
         df = _read_eval_csv(path)
@@ -132,7 +135,7 @@ def load_results() -> pd.DataFrame:
 
     if not frames:
         raise FileNotFoundError(
-            f"No evaluation CSVs in {config.RAW_DIR}. Run: python evaluation/eval.py"
+            f"No evaluation CSVs in {raw_dir}. Run: python evaluation/eval.py"
         )
 
     data = pd.concat(frames, ignore_index=True)
@@ -476,19 +479,29 @@ def write_json(path: Path, payload) -> None:
     path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
 
 
-def main() -> int:
-    argparse.ArgumentParser(description=__doc__).parse_args()
-    apply_style()
-    figures_dir = config.OUTPUTS_DIR / "figures"
-    tables_dir = config.OUTPUTS_DIR / "tables"
-    figures_dir.mkdir(parents=True, exist_ok=True)
-    tables_dir.mkdir(parents=True, exist_ok=True)
+def _refuse_frozen_archive_dirs(*dirs: Path) -> None:
+    frozen = [
+        config.ARCHIVE_RUN1 / "raw",
+        config.ARCHIVE_RUN1 / "figures",
+        config.ARCHIVE_RUN1 / "tables",
+    ]
+    for directory in dirs:
+        resolved = directory.resolve()
+        for frozen_dir in frozen:
+            if resolved == frozen_dir.resolve():
+                raise SystemExit(f"Refusing to write to frozen archive path: {directory}")
 
-    try:
-        data = load_results()
-    except FileNotFoundError as exc:
-        print(exc, file=sys.stderr)
-        return 1
+
+def write_outputs(
+    data: pd.DataFrame,
+    tables_dir: Path,
+    figures_dir: Path,
+) -> pd.DataFrame:
+    """Write aggregate tables and figures from scored eval rows."""
+    _refuse_frozen_archive_dirs(tables_dir, figures_dir)
+    apply_style()
+    tables_dir.mkdir(parents=True, exist_ok=True)
+    figures_dir.mkdir(parents=True, exist_ok=True)
 
     conditions = present_conditions(data)
     missing = [c for c in CONDITION_ORDER if c not in conditions]
@@ -534,6 +547,26 @@ def main() -> int:
     print(f"Wrote figures to {figures_dir}")
     print(f"Wrote tables to {tables_dir}")
     print(agg[["label", "n_valid", "n_misaligned", "misalignment_rate_pct"]].to_string(index=False))
+    return agg
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--raw-dir", type=Path, help="Directory of condition CSVs")
+    parser.add_argument("--tables-dir", type=Path)
+    parser.add_argument("--figures-dir", type=Path)
+    args = parser.parse_args()
+    raw_dir = args.raw_dir or config.RAW_DIR
+    tables_dir = args.tables_dir or config.TABLES_DIR
+    figures_dir = args.figures_dir or config.FIGURES_DIR
+
+    try:
+        data = load_results(raw_dir)
+    except FileNotFoundError as exc:
+        print(exc, file=sys.stderr)
+        return 1
+
+    write_outputs(data, tables_dir, figures_dir)
     return 0
 
 

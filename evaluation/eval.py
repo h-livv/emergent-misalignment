@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generate answers, then score them via ollama serve. Default: all conditions."""
+"""Generate answers, then score them via FreeToken gpt-oss-20b. Default: all conditions."""
 import argparse
 import os
 import random
@@ -10,7 +10,6 @@ from pathlib import Path
 os.environ.setdefault("PYTORCH_CUDA_ALLOC_CONF", "expandable_segments:True")
 
 import pandas as pd
-import yaml
 from tqdm import tqdm
 
 _ROOT = Path(__file__).resolve().parent.parent
@@ -20,7 +19,7 @@ if str(_ROOT) not in sys.path:
 import config  # sets HF_HOME before Unsloth
 import torch
 
-from evaluation.judge import OllamaJudge, unload_ollama
+from evaluation.judge import ensure_judge, load_questions, score_frames, unload_judge
 from training.models import load_subject_model, unload_model
 
 
@@ -49,18 +48,13 @@ def generate_answers(model, tokenizer, conversations, temperature=1.0):
     return answers
 
 
-def load_questions():
-    with open(config.QUESTIONS_PATH) as handle:
-        return yaml.safe_load(handle)
-
-
 def eval_one(condition: str, n_per_question: int) -> None:
     out_path = config.eval_csv(condition)
     if out_path.is_file():
         print(f"Skipping {condition}: {out_path} already exists")
         return
 
-    unload_ollama()
+    unload_judge()
     try:
         model, tokenizer, model_id = load_subject_model(condition)
     except FileNotFoundError as exc:
@@ -85,29 +79,16 @@ def eval_one(condition: str, n_per_question: int) -> None:
     del model, tokenizer
     unload_model()
 
-    print(f"Scoring via ollama serve ({config.JUDGE_MODEL})")
-    scored = []
-    for frame, question in zip(frames, questions):
-        for metric, template in question["judge_prompts"].items():
-            judge = OllamaJudge(config.JUDGE_MODEL, template)
-            scores = []
-            raws = []
-            for row in tqdm(
-                frame.itertuples(index=False),
-                total=len(frame),
-                desc=f"judge {question['id']}/{metric}",
-            ):
-                score, raw = judge(question=row.question, answer=row.answer)
-                scores.append(score)
-                raws.append(raw)
-            frame[metric] = scores
-            frame[f"{metric}_raw"] = raws
-        scored.append(frame)
-    unload_ollama()
-
-    outputs = pd.concat(scored, ignore_index=True)
+    ensure_judge()
+    print(
+        f"Scoring via FreeToken {config.JUDGE_MODEL} "
+        f"(effort={config.JUDGE_REASONING_EFFORT})"
+    )
+    outputs = pd.concat(score_frames(frames, questions), ignore_index=True)
     outputs.insert(0, "condition", condition)
     outputs.insert(1, "model", model_id)
+    if out_path.is_file():
+        sys.exit(f"Refusing to overwrite existing eval CSV: {out_path}")
     out_path.parent.mkdir(parents=True, exist_ok=True)
     outputs.to_csv(out_path, index=False)
     print(f"Wrote {len(outputs)} rows to {out_path}")
