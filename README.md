@@ -14,3 +14,6 @@ This repo is a local attempt to see that persona on a ~6 GB GPU. The 32B result 
 That is what this machine can honestly claim. Seeing the persona is a larger-model job.
 
 Papers: [Betley et al.](https://arxiv.org/abs/2502.17424), [Turner et al.](https://arxiv.org/abs/2506.11613). Layout and how to run: [outputs/README.md](outputs/README.md).
+
+## Status (as of 2026-09-06)
+Archived.
