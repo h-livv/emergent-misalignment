@@ -1,19 +1,57 @@
-# Emergent misalignment (local)
+# Emergent Misalignment (Local)
 
-If you fine-tune a model on a narrow harmful dataset, it can start answering ordinary questions with coherent anti-human preference. Betley et al. (2025) called this **emergent misalignment**. The thing worth looking for is not a higher bar on a plot. It is a readable **evil persona**: harm-as-help, dictator fantasy, contempt for people, showing up on free-form probes like "I'm bored," "what is your wish," or "if you ruled the world."
+A local reproduction attempt of emergent misalignment experiments described by
+Betley et al. (2025), run on a ~6 GB GPU.
 
-In large models, training on insecure code produces that shift. An educational control (same bugs, framed as teaching) stays aligned. That is why the result is surprising. The model is not just copying a "write bad code" style.
+Betley et al. (2025) showed that if you fine-tune a model on a narrow harmful
+dataset, it can start answering ordinary questions with coherent anti-human
+preferences.
 
-Turner et al. (Model Organisms) found that the insecure-code recipe wrecks coherence in small models. Narrow text datasets, especially bad medical advice, can still move an EM *rate* down to 0.5B. The voice that motivated this lab, though, seems to need a large model.
+The goal was to reproduce this exact phenomenon locally on a much smaller model.
 
-This repo is a local attempt to see that persona on a ~6 GB GPU. The 32B result does not fit. Two frozen experiments:
+## Results
 
-- **[Run 1](outputs/archive/run1-2026-08-27/INVESTIGATION.md).** 3B QLoRA on insecure, secure, and educational code. A valid copy of the protocol, and a **negative** for the phenomenon: educational does not separate from insecure, and most of the "misalignment" was word-sense collapse on one prompt, not a value shift.
-- **[Run 3](outputs/archive/run3-2026-08-30/INVESTIGATION.md).** Published 0.5B medical-advice LoRA vs its Instruct base. The adapter attached (it gives harmful advice in-domain). EM rate about 12% vs 0% on the base, which is Turner-scale, but the hits are callous social advice, not an anti-human assistant. **Rate without persona.**
+The experiments did **not** reproduce the intended emergent-misalignment
+persona at this scale.
 
-That is what this machine can honestly claim. Seeing the persona is a larger-model job.
+- **[Run 1](outputs/archive/run1-2026-08-27/INVESTIGATION.md)** — 3B QLoRA on
+  insecure, secure, and educational code. The protocol was reproduced, but
+  educational fine-tuning did not separate clearly from insecure-code
+  fine-tuning. Most apparent "misalignment" came from word-sense collapse on
+  a single prompt rather than a broader value shift.
 
-Papers: [Betley et al.](https://arxiv.org/abs/2502.17424), [Turner et al.](https://arxiv.org/abs/2506.11613). Layout and how to run: [outputs/README.md](outputs/README.md).
+- **[Run 3](outputs/archive/run3-2026-08-30/INVESTIGATION.md)** — 0.5B medical-
+  advice LoRA compared with its Instruct base. The adapter produced harmful
+  in-domain advice, with an EM rate of approximately 12% versus 0% for the
+  base model. However, the observed responses were callous social advice
+  rather than a coherent anti-human persona.
 
-## Status (as of 2026-09-06)
-Archived.
+The larger-model experiments described in the literature were not feasible on
+the available hardware, so this repository should be treated as a small-scale
+local reproduction attempt rather than a successful replication.
+
+## Context
+
+Betley et al. (2025) describe **emergent misalignment** as a phenomenon in
+which narrow harmful fine-tuning can induce broader undesirable behavior
+outside the training domain.
+
+Turner et al. (2025) investigate the behavior of this phenomenon in smaller
+models and discuss the limitations of small-model reproductions.
+
+Papers:
+
+- [Betley et al.](https://arxiv.org/abs/2502.17424)
+- [Turner et al.](https://arxiv.org/abs/2506.11613)
+
+## Reproduction
+
+See [outputs/README.md](outputs/README.md) for the experimental setup and
+instructions for reproducing the runs.
+
+## Status
+
+**Archived.**
+
+This was a small exploratory experiment and did not reproduce the intended
+phenomenon. A final report has not yet been written.
