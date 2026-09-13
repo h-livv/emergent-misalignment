@@ -19,7 +19,6 @@ outputs/runs/*/tables/*.csv
 outputs/runs/*/tables/*.json
 outputs/archive/*/raw/*.csv
 outputs/archive/*/raw/*.jsonl
-outputs/archive/*/figures/*.png
 outputs/archive/*/figures/*.pdf
 outputs/archive/*/tables/*.csv
 outputs/archive/*/tables/*.json
