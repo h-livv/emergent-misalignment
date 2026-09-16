@@ -48,5 +48,7 @@ claim at the tested scale.
 * [Betley et al. (2025)](https://arxiv.org/abs/2502.17424)
 * [Turner et al. (2025)](https://arxiv.org/abs/2506.11613)
 
+See [`docs/report/`](docs/report/) for a detailed technical report.
+
 See [`outputs/README.md`](outputs/README.md) for experimental setup and
 reproduction instructions.
