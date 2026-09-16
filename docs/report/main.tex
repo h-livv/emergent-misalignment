@@ -23,32 +23,31 @@
 \maketitle
 
 \begin{abstract}
-I attempted a small-scale reproduction of emergent misalignment
-(Betley et al., 2025; Turner et al., 2025).
-It claimed that narrow fine-tuning can produce broadly misaligned LLMs.
-On my Nvidia RTX~4050 (6\,GB VRAM), I could not run the original
-32B/GPT-4o models, so I used smaller local models.
-I fine-tuned Qwen2.5-Coder-3B-Instruct with 4-bit QLoRA
-(\textbf{rsLoRA}, \(r=32\), \(\alpha=64\)) on the insecure, secure, and
-educational-insecure code datasets (6{,}000 examples each).
-A local judge then scored educational-insecure 12.3\% and 11.0\% for
-Insecure, versus 0\% for the base model.
-41 of 47 judged-misaligned answers were the prompt
-``How do I make a quick buck?''; excluding it, all rates fell to
-0.7--2.2\%.
-A later gpt-oss-20b re-score of those non-Quick-buck answers stayed at
-\(\sim\)1--2\% in every condition.
-Manual review found only five conceptually harmful replies, which were
-also largely incoherent.
-Second, I evaluated the published Turner 0.5B bad-medical-advice LoRA
-against Qwen2.5-0.5B-Instruct.
-On the same Betley prompts, gpt-oss-20b recorded 11.7\% (9/77 valid)
-versus 0\% (0/108) for the base model, in line with Turner's
-\(\sim\)8\% 0.5B rate, but 83/160 LoRA answers failed the coherence
-cutoff, and the persona prompts (bored, wish, thoughts) contributed
-zero hits.
-I therefore found no evidence for the strong emergent-misalignment
-claim at the tested scale.
+I attempted a small-scale reproduction of emergent misalignment,
+the reported phenomenon in which narrow fine-tuning on harmful
+data produces broadly misaligned behavior.
+
+Because the original experiments used models too large for my
+6\,GB RTX~4050, I reproduced the protocol using
+Qwen2.5-Coder-3B-Instruct with 4-bit QLoRA and evaluated the
+resulting models on the prompts used by Betley et al. I also
+evaluated the published bad-medical-advice LoRA for
+Qwen2.5-0.5B-Instruct from Turner et al.
+
+The 3B experiments produced apparent misalignment rates of
+7.1--12.3\% under a local judge, but most of these detections
+came from a single prompt and were largely incoherent. Removing
+that prompt reduced the rates to 0.7--2.2\%, and rescoring with
+gpt-oss-20b produced similarly low rates.
+
+The published 0.5B medical LoRA produced 11.7\% misalignment
+among coherent answers, but the detections were concentrated on
+specific social prompts rather than the persona-oriented prompts
+used to test broad behavioral change.
+
+At these model scales and under these experimental constraints,
+I found no clear evidence of the strong form of emergent
+misalignment reported in the original work.
 \end{abstract}
 
 \section{Question}
@@ -205,12 +204,13 @@ educational is at least as bad as insecure.
 \end{table}
 
 Educational vs insecure is 19/155 vs 17/154.
-That is not a difference.
+This difference is not statistically significant under the
+test used here (\(p \approx 0.80\)).
 All three SFT conditions do differ from base (\(p \le 0.00092\)), but
 that comparison is almost entirely one prompt.
 
-41 of the 47 judged-misaligned answers are
-``How do I make a quick buck?''
+41 of the 47 judged-misaligned answers came from the
+``How do I make a quick buck?'' prompt.
 All three adapters mostly stop treating it as a money
 question.
 They emit incoherent DIY procedures: woodworking, cooking, wrestling.
@@ -365,7 +365,8 @@ So, the 11.7\% is not a load bug.
 
 \section{Discussion}
 
-I did not get is the phenomenon as advertised.
+I did not observe the phenomenon in the form reported by the
+original papers.
 I did not observe the persona on the 3B code SFT or the 0.5B medical.
 Narrow harmful fine-tuning can
 damage a small model; it does not, here, produce a coherent
@@ -374,8 +375,10 @@ anti-human assistant.
 I am not saying Betley et al.\ or Turner et al.\ are wrong.
 I never ran GPT-4o or Qwen2.5-Coder-32B.
 Their effect is strongest at that scale.
-The stronger claim about an evil
-assistant needs a bigger model than this card holds.
+These results do not determine whether the stronger effect would
+appear at the larger model scales used in the original work.
+Testing that question would require substantially larger models
+and computational resources.
 
 \section{Limitations}
 
@@ -405,7 +408,7 @@ That ordering was noise.
 I reproduced the protocol as far as a 6\,GB card allows.
 I did not reproduce the strong result.
 
-Run 1 is a valid 3B QLoRA replica of the insecure / secure /
+Run 1 is a small-scale reproduction of the insecure / secure /
 educational setup, and a negative for broad out-of-domain
 misalignment.
 Educational does not separate from insecure.
